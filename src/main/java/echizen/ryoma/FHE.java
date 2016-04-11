@@ -99,11 +99,14 @@ public class FHE {
 
     private BigInteger sum() {
         int SubSize = (int) (Math.random() * PublicKeyCount);
+        if (SubSize < 1) {
+            SubSize = 1;
+        }
         BigInteger sum = BigInteger.ZERO;
-        for (int i = 0; i < SubSize; i++) {
+        for (int i = 1; i < SubSize; i++) {
             sum = sum.add(keyPair.getPublicKey().get(i)).mod(keyPair.getPublicKey().get(0));
         }
-        return sum;
+        return sum.multiply(new BigInteger("2"));
     }
 
     private BigInteger noise() {
