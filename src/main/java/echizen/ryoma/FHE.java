@@ -88,7 +88,10 @@ public class FHE {
     public ArrayList<BigInteger> encrypt(String message) {
         ArrayList<BigInteger> encrypt = new ArrayList<>();
         for (int i = 0; i < message.length(); i++) {
-            encrypt.add(new BigInteger(String.valueOf(message.charAt(i))).add(new BigInteger("2").multiply(noise())).add(sum()));
+            BigInteger x = new BigInteger(String.valueOf(message.charAt(i)));
+            x = new BigInteger("2").multiply(noise()).add(sum()).add(x);
+            x = x.mod(keyPair.getPublicKey().get(0));
+            encrypt.add(x);
         }
         return encrypt;
     }
