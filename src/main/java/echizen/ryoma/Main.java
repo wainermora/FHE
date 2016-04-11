@@ -1,21 +1,17 @@
 package echizen.ryoma;
 
-import com.google.gson.Gson;
-import sun.misc.BASE64Encoder;
-
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         FHE fhe = new FHE();
         KeyPair keyPair = fhe.generateKeyPair(64);
         ArrayList<BigInteger> encrypt = fhe.encrypt("1111111011111111111");
         System.out.println(fhe.decrypt(encrypt));
 
-        String encode = (new BASE64Encoder()).encode((new Gson()).toJson(keyPair).toString().getBytes());
-//
-//        System.out.println(encode);
+        //keyPair.save("D:/test.key", "D:/test.crt");
     }
 }

@@ -20,7 +20,7 @@ public class FHE {
 
     public FHE(BigInteger privateKey, ArrayList<BigInteger> publicKey) {
         keyPair = new KeyPair(privateKey, publicKey);
-        SecurityParameter = keyPair.getPrivateKey().bitCount();
+        SecurityParameter = (int) Math.sqrt(keyPair.getPrivateKey().bitCount());
         generateParameter();
     }
 
@@ -74,12 +74,14 @@ public class FHE {
 
         ArrayList<BigInteger> PublicKeys = new ArrayList<>();
         high = new BigInteger("2").pow(NoiseSize).subtract(BigInteger.ONE);
+        BigInteger publicKey = Q.get(0).multiply(keyPair.getPrivateKey());
+        PublicKeys.add(publicKey);
         for (int i = 0; i < PublicKeyCount; i++) {
             BigInteger r;
             do {
                 r = new BigInteger(high.bitLength(), random);
             } while (r.compareTo(high) >= 0);
-            BigInteger publicKey = Q.get(i).multiply(keyPair.getPrivateKey()).add((new BigInteger("2").multiply(r)));
+            publicKey = Q.get(i).multiply(keyPair.getPrivateKey()).add((new BigInteger("2").multiply(r)));
             PublicKeys.add(publicKey);
         }
         return PublicKeys;
@@ -89,8 +91,7 @@ public class FHE {
         ArrayList<BigInteger> encrypt = new ArrayList<>();
         for (int i = 0; i < message.length(); i++) {
             BigInteger x = new BigInteger(String.valueOf(message.charAt(i)));
-            x = new BigInteger("2").multiply(noise()).add(sum()).add(x);
-            x = x.mod(keyPair.getPublicKey().get(0));
+            x = new BigInteger("2").multiply(noise()).add(sum()).add(x).mod(keyPair.getPublicKey().get(0));
             encrypt.add(x);
         }
         return encrypt;
@@ -100,13 +101,13 @@ public class FHE {
         int SubSize = (int) (Math.random() * PublicKeyCount);
         BigInteger sum = BigInteger.ZERO;
         for (int i = 0; i < SubSize; i++) {
-            sum = sum.add(keyPair.getPublicKey().get(i));
+            sum = sum.add(keyPair.getPublicKey().get(i)).mod(keyPair.getPublicKey().get(0));
         }
         return sum;
     }
 
     private BigInteger noise() {
-        BigInteger high = new BigInteger("2").pow(NoiseSize - 1).subtract(BigInteger.ONE);
+        BigInteger high = new BigInteger("2").pow(NoiseSize).subtract(BigInteger.ONE);
         BigInteger noise;
         Random random = new Random();
         do {
