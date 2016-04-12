@@ -76,7 +76,7 @@ public class FHE {
     public String decrypt(ArrayList<BigInteger> encryptMessage) {
         StringBuilder message = new StringBuilder();
         for (BigInteger encrypt : encryptMessage) {
-            message.append(encrypt.mod(Key.PrivateKey.p).mod(new BigInteger("2")));
+            message.append(encrypt.and(BigInteger.ONE).xor(encrypt.divide(Key.PrivateKey.p).and(BigInteger.ONE)));
         }
         return message.toString();
     }
