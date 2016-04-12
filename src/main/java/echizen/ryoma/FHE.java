@@ -13,6 +13,7 @@ public class FHE {
     private int PublicKeyIntegerSize;
     private int PublicKeyCount;
     private int SecondNoiseParameter;
+    private int RandomSeed;
 
     public FHE() {
         keyPair = null;
@@ -36,13 +37,15 @@ public class FHE {
         SecurityParameter = (int) Math.sqrt(privateKeySize);
         generateParameter();
         keyPair = new KeyPair();
+        Random random = new Random();
+        RandomSeed = random.nextInt();
         keyPair.setPrivateKey(generatePrivateKey());
         keyPair.setPublicKey(generatePublicKey());
         return keyPair;
     }
 
     private BigInteger generateOdd(int length) {
-        Random random = new Random();
+        Random random = new Random(RandomSeed);
         BigInteger base = new BigInteger("2").pow(length - 1);
         BigInteger number;
         do {
@@ -58,7 +61,7 @@ public class FHE {
     private ArrayList<BigInteger> generatePublicKey() {
         ArrayList<BigInteger> Q = new ArrayList<>();
         BigInteger high = new BigInteger("2").pow(PublicKeyIntegerSize).divide(keyPair.getPrivateKey());
-        Random random = new Random();
+        Random random = new Random(RandomSeed);
         for (int i = 0; i < PublicKeyCount; i++) {
             BigInteger q;
             do {
