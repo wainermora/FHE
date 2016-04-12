@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class FHE {
     protected KeyPair Key;
-    protected int SecurityParameter;
+    protected int KeySize;
 
     public FHE() {
         Key = null;
@@ -15,12 +15,12 @@ public class FHE {
 
     public FHE(PrivateKey privateKey, PublicKey publicKey) {
         Key = new KeyPair(privateKey, publicKey);
-        SecurityParameter = (int) Math.sqrt(Key.PrivateKey.p.bitCount());
+        KeySize = Key.PrivateKey.p.bitCount();
     }
 
-    public KeyPair generateKeyPair(int privateKeySize) {
-        SecurityParameter = (int) Math.sqrt(privateKeySize);
+    public KeyPair generateKeyPair(int keySize) {
         Key = new KeyPair();
+        KeySize = keySize;
         Key.PrivateKey = generatePrivateKey();
         Key.PublicKey = generatePublicKey();
         return Key;
@@ -28,8 +28,8 @@ public class FHE {
 
     private PrivateKey generatePrivateKey() {
         SecureRandom random = new SecureRandom();
-        BigInteger high = new BigInteger("2").pow((int) Math.pow(SecurityParameter, 2)).subtract(BigInteger.ONE);
-        BigInteger low = new BigInteger("2").pow((int) Math.pow(SecurityParameter, 2) - 1);
+        BigInteger high = new BigInteger("2").pow(KeySize).subtract(BigInteger.ONE);
+        BigInteger low = new BigInteger("2").pow(KeySize - 1);
         BigInteger number;
         do {
             number = new BigInteger(high.bitLength(), 100, random);
@@ -38,29 +38,23 @@ public class FHE {
     }
 
     private PublicKey generatePublicKey() {
-        SecureRandom random = new SecureRandom();
-        BigInteger high = new BigInteger("2").pow((int) Math.pow(SecurityParameter, 4)).subtract(BigInteger.ONE);
-        BigInteger low = new BigInteger("2").pow((int) Math.pow(SecurityParameter, 4) - 1);
-        BigInteger q;
-        do {
-            q = new BigInteger(high.bitLength(), 100, random);
-        } while (q.compareTo(high) > 0 || q.compareTo(low) < 0);
+        SecureRandom secureRandom = new SecureRandom();
+        BigInteger q = new BigInteger((int) Math.pow(KeySize, 5.0 / 2.0 - 1), 100, secureRandom);
         BigInteger N = Key.PrivateKey.p.multiply(q);
 
-        high = new BigInteger("2").pow((int) Math.pow(SecurityParameter, 5)).divide(Key.PrivateKey.p).subtract(BigInteger.ONE);
-        low = new BigInteger("2").pow(high.bitCount() - 1);
+        BigInteger high = new BigInteger("2").pow((int) Math.pow(KeySize, 5.0 / 2.0)).divide(Key.PrivateKey.p).subtract(BigInteger.ONE);
+        Random random = new Random();
         do {
             q = new BigInteger(high.bitLength(), random);
-        } while (q.compareTo(high) > 0 || q.compareTo(low) < 0);
-
+        } while (q.compareTo(high) > 0 || q.mod(new BigInteger("2")) == BigInteger.ZERO);
         BigInteger x = Key.PrivateKey.p.multiply(q).add(new BigInteger("2").multiply(r()));
         return new PublicKey(N, x);
     }
 
     private BigInteger r() {
         Random random = new Random();
-        BigInteger high = new BigInteger("2").pow(SecurityParameter).subtract(BigInteger.ONE);
-        BigInteger low = new BigInteger("2").pow(SecurityParameter - 1);
+        BigInteger high = new BigInteger("2").pow((int) Math.sqrt(KeySize)).subtract(BigInteger.ONE);
+        BigInteger low = new BigInteger("2").pow((int) Math.sqrt(KeySize) - 1);
         BigInteger r;
         do {
             r = new BigInteger(high.bitLength(), random);
@@ -72,9 +66,9 @@ public class FHE {
     public ArrayList<BigInteger> encrypt(String message) {
         ArrayList<BigInteger> encrypt = new ArrayList<>();
         for (int i = 0; i < message.length(); i++) {
-            BigInteger x = new BigInteger(String.valueOf(message.charAt(i)));
-            x = new BigInteger("2").multiply(r()).add(r().multiply(Key.PublicKey.x)).add(x).mod(Key.PublicKey.N);
-            encrypt.add(x);
+            BigInteger c = new BigInteger(String.valueOf(message.charAt(i)));
+            c = c.add(new BigInteger("2").multiply(r())).add(r().multiply(Key.PublicKey.x)).mod(Key.PublicKey.N);
+            encrypt.add(c);
         }
         return encrypt;
     }
