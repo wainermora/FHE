@@ -4,18 +4,18 @@ import com.google.gson.Gson;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
-import java.math.BigInteger;
-import java.util.ArrayList;
 
 public class KeyPair {
-    private BigInteger PrivateKey;
-    private ArrayList<BigInteger> PublicKey;
+    public PrivateKey PrivateKey;
+    public PublicKey PublicKey;
 
     public KeyPair() {
+        PrivateKey = new PrivateKey();
+        PublicKey = new PublicKey();
     }
 
-    public KeyPair(BigInteger secretKey, ArrayList<BigInteger> publicKey) {
-        PrivateKey = secretKey;
+    public KeyPair(PrivateKey privateKey, PublicKey publicKey) {
+        PrivateKey = privateKey;
         PublicKey = publicKey;
     }
 
@@ -49,21 +49,5 @@ public class KeyPair {
         writer.write((new BASE64Encoder()).encode((new Gson()).toJson(PublicKey).toString().getBytes()));
         writer.write("\n-----END FHE PUBLIC KEY-----\n");
         writer.close();
-    }
-
-    public BigInteger getPrivateKey() {
-        return PrivateKey;
-    }
-
-    public void setPrivateKey(BigInteger privateKey) {
-        PrivateKey = privateKey;
-    }
-
-    public ArrayList<BigInteger> getPublicKey() {
-        return PublicKey;
-    }
-
-    public void setPublicKey(ArrayList<BigInteger> publicKey) {
-        PublicKey = publicKey;
     }
 }

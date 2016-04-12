@@ -8,9 +8,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         FHE fhe = new FHE();
-        KeyPair keyPair = fhe.generateKeyPair(128);
-        ArrayList<BigInteger> encrypt = fhe.encrypt("1110111111111111111");
+        KeyPair key = fhe.generateKeyPair(64);
+        ArrayList<BigInteger> encrypt = fhe.encrypt("00001111");
         System.out.println(fhe.decrypt(encrypt));
-        //keyPair.save("D:/test.key", "D:/test.crt");
+        key.save("D:/test.key", "D:/test.crt");
     }
 }
