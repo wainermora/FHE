@@ -5,15 +5,15 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class FHE {
+public class FullHomomorphicEncryption {
     protected KeyPair Key;
     protected int KeySize;
 
-    public FHE() {
+    public FullHomomorphicEncryption() {
         Key = null;
     }
 
-    public FHE(PrivateKey privateKey, PublicKey publicKey) {
+    public FullHomomorphicEncryption(PrivateKey privateKey, PublicKey publicKey) {
         Key = new KeyPair(privateKey, publicKey);
         KeySize = Key.PrivateKey.p.bitCount();
     }
