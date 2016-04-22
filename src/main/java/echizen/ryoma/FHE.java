@@ -39,7 +39,8 @@ public class FHE {
 
     private PublicKey generatePublicKey() {
         SecureRandom secureRandom = new SecureRandom();
-        BigInteger q = new BigInteger((int) Math.pow(KeySize, 5.0 / 2.0 - 1), 100, secureRandom);
+        BigInteger q = new BigInteger(KeySize, 100, secureRandom);
+        q = q.multiply(new BigInteger(KeySize, 100, secureRandom));
         BigInteger N = Key.PrivateKey.p.multiply(q);
 
         BigInteger high = new BigInteger("2").pow((int) Math.pow(KeySize, 5.0 / 2.0)).divide(Key.PrivateKey.p).subtract(BigInteger.ONE);
