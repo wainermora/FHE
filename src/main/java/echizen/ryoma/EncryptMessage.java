@@ -1,9 +1,15 @@
 package echizen.ryoma;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class EncryptMessage {
-    public ArrayList<BigInteger> C;
-    public ArrayList<Integer> Z;
+    public BigInteger C;
+    public ArrayList<BigDecimal> Z;
+
+    public EncryptMessage() {
+        C = BigInteger.ZERO;
+        Z = new ArrayList<>();
+    }
 }

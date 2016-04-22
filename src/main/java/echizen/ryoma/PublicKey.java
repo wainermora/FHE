@@ -2,20 +2,19 @@ package echizen.ryoma;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 
 public class PublicKey {
     public BigInteger N;
     public BigInteger x;
-    public int seed;
-    public BigDecimal y;
+    public ArrayList<BigDecimal> Y;
 
     public PublicKey() {
     }
 
-    public PublicKey(BigInteger n, BigInteger x, int seed, BigDecimal y) {
+    public PublicKey(BigInteger n, BigInteger x, ArrayList<BigDecimal> y) {
         N = n;
         this.x = x;
-        this.seed = seed;
-        this.y = y;
+        Y = y;
     }
 }
