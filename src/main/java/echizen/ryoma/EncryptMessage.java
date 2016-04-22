@@ -12,4 +12,9 @@ public class EncryptMessage {
         C = BigInteger.ZERO;
         Z = new ArrayList<>();
     }
+
+    public EncryptMessage(BigInteger c) {
+        C = c;
+        Z = new ArrayList<>();
+    }
 }

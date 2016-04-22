@@ -12,7 +12,7 @@ public class FullHomomorphicEncryption {
     private KeyPair Key;
     private int KeySize;
 
-    KeyPair generateKeyPair(int keySize) {
+    public KeyPair generateKeyPair(int keySize) {
         Key = new KeyPair();
         KeySize = keySize;
         Key.PrivateKey = generatePrivateKey();
@@ -51,7 +51,7 @@ public class FullHomomorphicEncryption {
     }
 
     private PublicKey generatePublicKey() {
-        int length = 5 * KeySize;
+        int length = KeySize;
         SecureRandom secureRandom = new SecureRandom();
         BigInteger N = Key.PrivateKey.p.multiply(new BigInteger(length, secureRandom));
 
@@ -129,6 +129,7 @@ public class FullHomomorphicEncryption {
         StringBuilder message = new StringBuilder();
         for (EncryptMessage encrypt : EncryptMessage) {
             message.append(decrypt(encrypt));
+            recrypte(encrypt);
         }
         return message.toString();
     }
@@ -141,12 +142,15 @@ public class FullHomomorphicEncryption {
         return sum.toBigInteger().and(BigInteger.ONE).xor(encrypt.C.and(BigInteger.ONE)).toString();
     }
 
-    private EncryptMessage enaluate(EncryptMessage encrypt) {
-        encrypt.Z.clear();
-        int accuracy = (int) (Math.log10(KeySize) + Math.log10(Math.log10(KeySize)));
-        for (BigDecimal y : Key.PublicKey.Y) {
-            encrypt.Z.add(y.multiply(new BigDecimal(encrypt.C)).setScale(accuracy, BigDecimal.ROUND_DOWN));
+    private EncryptMessage recrypte(EncryptMessage encrypt) {
+        EncryptMessage message = new EncryptMessage(encrypt.C.and(BigInteger.ONE));
+        message = encrypt(message);
+        BigDecimal sum = BigDecimal.ZERO;
+        for (int i = 0; i < encrypt.Z.size(); i++) {
+            sum = sum.add(encrypt.Z.get(i).multiply(new BigDecimal(Key.PublicKey.S.get(i))));
         }
-        return encrypt;
+        message.C = message.C.add(sum.toBigInteger().and(BigInteger.ONE));
+        System.out.println(message.C.mod(Key.PrivateKey.p).mod(new BigInteger("2")));
+        return message;
     }
 }
