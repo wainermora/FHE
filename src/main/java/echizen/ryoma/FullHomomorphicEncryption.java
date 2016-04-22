@@ -3,14 +3,11 @@ package echizen.ryoma;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class FullHomomorphicEncryption {
-    private KeyPair Key;
-    private int KeySize;
+    protected KeyPair Key;
+    protected int KeySize;
 
     public KeyPair generateKeyPair(int keySize) {
         Key = new KeyPair();
@@ -35,7 +32,7 @@ public class FullHomomorphicEncryption {
         BigInteger p = new BigInteger(KeySize, 100, secureRandom);
 
         Set<Integer> S = new HashSet<>();
-        int k = (int) Math.pow(KeySize, 3.0 / 2.0) + 2;
+        int k = 4 * KeySize + 2;
         Random random = new Random();
         int count = (int) Math.sqrt(KeySize);
         for (int i = 0; i < count - 1; i++) {
@@ -62,7 +59,7 @@ public class FullHomomorphicEncryption {
         } while (integer.mod(new BigInteger("2")).equals(BigInteger.ZERO));
         BigInteger x = Key.PrivateKey.p.multiply(integer).add(new BigInteger("2").multiply(r()));
 
-        int k = (int) Math.pow(KeySize, 3.0 / 2.0) + 2;
+        int k = 4 * KeySize + 2;
         BigInteger K = new BigInteger("2").pow(k).divide(Key.PrivateKey.p);
         ArrayList<BigInteger> U = new ArrayList<>();
 
@@ -81,7 +78,7 @@ public class FullHomomorphicEncryption {
         u = K.subtract(sum).mod(new BigInteger("2").pow(k + 1));
         U.set(U.size() - 1, u);
 
-        int accurate = (int) (Math.pow(KeySize, 3.0 / 2.0) * Math.log10(2));
+        int accurate = (int) (2 * (2 * KeySize + 3) * Math.log10(2));
         BigInteger Mod = new BigInteger("2").pow(k);
         Key.PublicKey.Y = new ArrayList<>();
         for (int i = 0; i < k; i++) {
@@ -107,7 +104,7 @@ public class FullHomomorphicEncryption {
         return EncryptMessage;
     }
 
-    private EncryptMessage encrypt(EncryptMessage encrypt) {
+    protected EncryptMessage encrypt(EncryptMessage encrypt) {
         encrypt.Z.clear();
         int accuracy = (int) (KeySize * Math.log10(2) + 3);
         for (BigDecimal y : Key.PublicKey.Y) {
@@ -129,7 +126,6 @@ public class FullHomomorphicEncryption {
         StringBuilder message = new StringBuilder();
         for (EncryptMessage encrypt : EncryptMessage) {
             message.append(decrypt(encrypt));
-            recrypte(encrypt);
         }
         return message.toString();
     }
@@ -142,15 +138,68 @@ public class FullHomomorphicEncryption {
         return sum.toBigInteger().and(BigInteger.ONE).xor(encrypt.C.and(BigInteger.ONE)).toString();
     }
 
+    private BigInteger decrypt(BigInteger encrypt) {
+        return encrypt.and(BigInteger.ONE).xor(encrypt.divide(Key.PrivateKey.p).and(BigInteger.ONE));
+    }
+
     private EncryptMessage recrypte(EncryptMessage encrypt) {
-        EncryptMessage message = new EncryptMessage(encrypt.C.and(BigInteger.ONE));
-        message = encrypt(message);
-        BigDecimal sum = BigDecimal.ZERO;
-        for (int i = 0; i < encrypt.Z.size(); i++) {
-            sum = sum.add(encrypt.Z.get(i).multiply(new BigDecimal(Key.PublicKey.S.get(i))));
+        return encrypt(new EncryptMessage(recrypte(encrypt.C)));
+    }
+
+    private BigInteger recrypte(BigInteger encrypt) {
+        return encrypt(decrypt(encrypt));
+    }
+
+    public ArrayList<EncryptMessage> xor(ArrayList<EncryptMessage> c1, ArrayList<EncryptMessage> c2) {
+        ArrayList<EncryptMessage> result = new ArrayList<>();
+        for (int i = 0; i < c1.size(); i++) {
+            result.add(xor(c1.get(i), c2.get(i)));
         }
-        message.C = message.C.add(sum.toBigInteger().and(BigInteger.ONE));
-        System.out.println(message.C.mod(Key.PrivateKey.p).mod(new BigInteger("2")));
-        return message;
+        return result;
+    }
+
+    private EncryptMessage xor(EncryptMessage a, EncryptMessage b) {
+        return recrypte(encrypt(new EncryptMessage(xor(a.C, b.C))));
+    }
+
+    private BigInteger xor(BigInteger a, BigInteger b) {
+        return recrypte(a.add(b).mod(Key.PublicKey.N));
+    }
+
+    private BigInteger xor(BigInteger a, BigInteger b, BigInteger c) {
+        return xor(xor(a, b), c);
+    }
+
+    private BigInteger or(BigInteger a, BigInteger b) {
+        return recrypte(xor(xor(a, b), and(a, b)));
+    }
+
+    public ArrayList<EncryptMessage> and(ArrayList<EncryptMessage> c1, ArrayList<EncryptMessage> c2) {
+        ArrayList<EncryptMessage> result = new ArrayList<>();
+        for (int i = 0; i < c1.size(); i++) {
+            result.add(and(c1.get(i), c2.get(i)));
+        }
+        return result;
+    }
+
+    private EncryptMessage and(EncryptMessage a, EncryptMessage b) {
+        return recrypte(encrypt(new EncryptMessage(and(a.C, b.C))));
+    }
+
+    private BigInteger and(BigInteger a, BigInteger b) {
+        return recrypte(a.multiply(b).mod(Key.PublicKey.N));
+    }
+
+    public ArrayList<EncryptMessage> add(ArrayList<EncryptMessage> a, ArrayList<EncryptMessage> b) {
+        Collections.reverse(a);
+        Collections.reverse(b);
+        ArrayList<EncryptMessage> result = new ArrayList<>();
+        BigInteger carry = encrypt(BigInteger.ZERO);
+        for (int i = 0; i < a.size(); i++) {
+            result.add(encrypt(new EncryptMessage(xor(a.get(i).C, b.get(i).C, carry))));
+            carry = or(and(a.get(i).C, b.get(i).C), and(carry, xor(a.get(i).C, b.get(i).C)));
+        }
+        Collections.reverse(result);
+        return result;
     }
 }
