@@ -9,23 +9,24 @@ import java.util.Random;
 import java.util.Set;
 
 public class FullHomomorphicEncryption {
-    protected KeyPair Key;
-    protected int KeySize;
+    private KeyPair Key;
+    private int KeySize;
 
-    public FullHomomorphicEncryption() {
-        Key = null;
-    }
-
-    public FullHomomorphicEncryption(PrivateKey privateKey, PublicKey publicKey) {
-        Key = new KeyPair(privateKey, publicKey);
-        KeySize = Key.PrivateKey.p.bitCount();
-    }
-
-    public KeyPair generateKeyPair(int keySize) {
+    KeyPair generateKeyPair(int keySize) {
         Key = new KeyPair();
         KeySize = keySize;
         Key.PrivateKey = generatePrivateKey();
         Key.PublicKey = generatePublicKey();
+
+        Key.PublicKey.S = new ArrayList<>();
+        int k = (int) Math.pow(KeySize, 3.0 / 2.0) + 2;
+        for (int i = 0; i < k; i++) {
+            BigInteger integer = BigInteger.ZERO;
+            if (Key.PublicKey.S.contains(i)) {
+                integer = BigInteger.ONE;
+            }
+            Key.PublicKey.S.add(encrypt(integer));
+        }
         return Key;
     }
 
@@ -49,10 +50,20 @@ public class FullHomomorphicEncryption {
         return new PrivateKey(p, S);
     }
 
-    private void generateY() {
-        int k = (int) Math.pow(KeySize, 1.5) + 2;
-        BigInteger K = new BigInteger("2").pow(k).divide(Key.PrivateKey.p);
+    private PublicKey generatePublicKey() {
+        int length = 5 * KeySize;
+        SecureRandom secureRandom = new SecureRandom();
+        BigInteger N = Key.PrivateKey.p.multiply(new BigInteger(length, secureRandom));
+
         Random random = new Random();
+        BigInteger integer;
+        do {
+            integer = new BigInteger(length, random);
+        } while (integer.mod(new BigInteger("2")).equals(BigInteger.ZERO));
+        BigInteger x = Key.PrivateKey.p.multiply(integer).add(new BigInteger("2").multiply(r()));
+
+        int k = (int) Math.pow(KeySize, 3.0 / 2.0) + 2;
+        BigInteger K = new BigInteger("2").pow(k).divide(Key.PrivateKey.p);
         ArrayList<BigInteger> U = new ArrayList<>();
 
         BigInteger u;
@@ -76,21 +87,6 @@ public class FullHomomorphicEncryption {
         for (int i = 0; i < k; i++) {
             Key.PublicKey.Y.add(new BigDecimal(U.get(i)).divide(new BigDecimal(Mod), accurate, BigDecimal.ROUND_DOWN));
         }
-    }
-
-    private PublicKey generatePublicKey() {
-        int length = KeySize;
-        SecureRandom secureRandom = new SecureRandom();
-        BigInteger N = new BigInteger(length, 100, secureRandom);
-        N = Key.PrivateKey.p.multiply(N);
-
-        Random random = new Random();
-        BigInteger integer;
-        do {
-            integer = new BigInteger(length, random);
-        } while (integer.mod(new BigInteger("2")) == BigInteger.ZERO);
-        BigInteger x = Key.PrivateKey.p.multiply(integer).add(new BigInteger("2").multiply(r()));
-        generateY();
         return new PublicKey(N, x, Key.PublicKey.Y);
     }
 
@@ -125,6 +121,10 @@ public class FullHomomorphicEncryption {
         return encrypt;
     }
 
+    private BigInteger encrypt(BigInteger encrypt) {
+        return encrypt.add(new BigInteger("2").multiply(r())).add(r().multiply(Key.PublicKey.x)).mod(Key.PublicKey.N);
+    }
+
     public String decrypt(ArrayList<EncryptMessage> EncryptMessage) {
         StringBuilder message = new StringBuilder();
         for (EncryptMessage encrypt : EncryptMessage) {
@@ -145,7 +145,7 @@ public class FullHomomorphicEncryption {
         encrypt.Z.clear();
         int accuracy = (int) (Math.log10(KeySize) + Math.log10(Math.log10(KeySize)));
         for (BigDecimal y : Key.PublicKey.Y) {
-            encrypt.Z.add(y.multiply(new BigDecimal(encrypt.C)).setScale(accuracy));
+            encrypt.Z.add(y.multiply(new BigDecimal(encrypt.C)).setScale(accuracy, BigDecimal.ROUND_DOWN));
         }
         return encrypt;
     }

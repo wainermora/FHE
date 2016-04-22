@@ -8,6 +8,7 @@ public class PublicKey {
     public BigInteger N;
     public BigInteger x;
     public ArrayList<BigDecimal> Y;
+    public ArrayList<BigInteger> S;
 
     public PublicKey() {
     }
