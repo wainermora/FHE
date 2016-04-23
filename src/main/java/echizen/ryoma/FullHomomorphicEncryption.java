@@ -78,7 +78,7 @@ public class FullHomomorphicEncryption {
         u = K.subtract(sum).mod(new BigInteger("2").pow(k + 1));
         U.set(U.size() - 1, u);
 
-        int accurate = (int) (2 * (2 * KeySize + 3) * Math.log10(2));
+        int accurate = (int) (2 * (4 * KeySize + 2) * Math.log10(2));
         BigInteger Mod = new BigInteger("2").pow(k);
         Key.PublicKey.Y = new ArrayList<>();
         for (int i = 0; i < k; i++) {
