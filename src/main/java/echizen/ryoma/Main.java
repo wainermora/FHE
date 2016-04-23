@@ -7,9 +7,12 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         FullHomomorphicEncryption fhe = new FullHomomorphicEncryption();
-        KeyPair key = fhe.generateKeyPair(32);
+        KeyPair key = fhe.generateKeyPair(128);
         key.save("D:/test.key", "D:/test.crt");
-        ArrayList<EncryptMessage> encrypt = fhe.encrypt("00001111");
-        System.out.println(fhe.decrypt(encrypt));
+        ArrayList<EncryptMessage> c1 = fhe.encrypt("00001111");
+        ArrayList<EncryptMessage> c2 = fhe.encrypt("10101010");
+        System.out.println(fhe.decrypt(fhe.and(c1, c2)));
+        System.out.println(fhe.decrypt(fhe.xor(c1, c2)));
+        System.out.println(fhe.decrypt(fhe.add(c1, c2)));
     }
 }
