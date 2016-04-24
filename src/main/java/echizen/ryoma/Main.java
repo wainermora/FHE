@@ -6,13 +6,18 @@ import java.util.ArrayList;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        FullHomomorphicEncryption fhe = new FullHomomorphicEncryption();
-        KeyPair key = fhe.generateKeyPair(128);
-        key.save("D:/test.key", "D:/test.crt");
-        ArrayList<EncryptMessage> c1 = fhe.encrypt("00001111");
-        ArrayList<EncryptMessage> c2 = fhe.encrypt("10101010");
-        System.out.println(fhe.decrypt(fhe.and(c1, c2)));
-        System.out.println(fhe.decrypt(fhe.xor(c1, c2)));
-        System.out.println(fhe.decrypt(fhe.add(c1, c2)));
+        KeyPair FHE_KeyPair = new KeyPair(128);
+        FHE_KeyPair.generate();
+
+        Encrypt FHE_Encrypt = new Encrypt(FHE_KeyPair.getPublicKey());
+        Decrypt FHE_Decrypt = new Decrypt(FHE_KeyPair.getPrivateKey());
+
+        //key.save("D:/test.key", "D:/test.crt");
+
+        ArrayList<EncryptMessage> c1 = FHE_Encrypt.encrypt("0011");
+        ArrayList<EncryptMessage> c2 = FHE_Encrypt.encrypt("1100");
+        System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.and(c1, c2)));
+        System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.xor(c1, c2)));
+        System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.add(c1, c2)));
     }
 }
