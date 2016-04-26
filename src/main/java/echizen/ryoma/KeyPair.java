@@ -138,8 +138,15 @@ public class KeyPair {
         }
         Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
         writer.write("-----BEGIN FHE PRIVATE KEY-----\n");
-        writer.write((new BASE64Encoder()).encode((new Gson()).toJson(privateKey).toString().getBytes()));
-        writer.write("\n-----END FHE PRIVATE KEY-----\n");
+        String string = (new BASE64Encoder()).encode((new Gson()).toJson(privateKey).toString().getBytes()).replaceAll("\r\n", "");
+        for (int i = 0; i < string.length(); i = i + 64) {
+            if (i + 64 > string.length()) {
+                writer.write(string.substring(i) + "\n");
+            } else {
+                writer.write(string.substring(i, i + 64) + "\n");
+            }
+        }
+        writer.write("-----END FHE PRIVATE KEY-----\n");
         writer.close();
 
         file = new File(PublicKeyFileName);
@@ -153,8 +160,15 @@ public class KeyPair {
         }
         writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
         writer.write("-----BEGIN FHE PUBLIC KEY-----\n");
-        writer.write((new BASE64Encoder()).encode((new Gson()).toJson(publicKey).toString().getBytes()));
-        writer.write("\n-----END FHE PUBLIC KEY-----\n");
+        string = (new BASE64Encoder()).encode((new Gson()).toJson(publicKey).toString().getBytes()).replaceAll("\r\n", "");
+        for (int i = 0; i < string.length(); i = i + 64) {
+            if (i + 64 > string.length()) {
+                writer.write(string.substring(i) + "\n");
+            } else {
+                writer.write(string.substring(i, i + 64) + "\n");
+            }
+        }
+        writer.write("-----END FHE PUBLIC KEY-----\n");
         writer.close();
     }
 
