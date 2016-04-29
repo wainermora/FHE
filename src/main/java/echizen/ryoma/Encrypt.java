@@ -119,7 +119,7 @@ public class Encrypt {
     }
 
     private EncryptMessage xor(EncryptMessage a, EncryptMessage b) {
-        return encrypt(new EncryptMessage(xor(a.C, b.C)));
+        return recrypt(encrypt(new EncryptMessage(xor(a.C, b.C))));
     }
 
     private BigInteger xor(BigInteger a, BigInteger b) {

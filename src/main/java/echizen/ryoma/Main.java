@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        KeyPair FHE_KeyPair = new KeyPair(128);
+        KeyPair FHE_KeyPair = new KeyPair(192);
         FHE_KeyPair.generate();
 
         Encrypt FHE_Encrypt = new Encrypt(FHE_KeyPair.getPublicKey());
