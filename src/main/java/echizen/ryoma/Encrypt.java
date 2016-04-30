@@ -3,6 +3,7 @@ package echizen.ryoma;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 public class Encrypt {
@@ -84,7 +85,7 @@ public class Encrypt {
         }
         BigInteger[] d = new BigInteger[accuracy];
         ArrayList<BigInteger> b = new ArrayList<>();
-        for (int i = accuracy - 2; i >= 0; i--) {
+        for (int i = accuracy - 1; i >= 0; i--) {
             b.clear();
             for (int j = 0; j < encrypt.Z.size(); j++) {
                 b.add(B[j][i]);
@@ -158,15 +159,16 @@ public class Encrypt {
         return result;
     }
 
-    private EncryptMessage not(EncryptMessage a) {
-        return xor(a, expand(new EncryptMessage(encrypt(BigInteger.ONE))));
-    }
-
-    public ArrayList<EncryptMessage> not(ArrayList<EncryptMessage> c) {
+    public ArrayList<EncryptMessage> add(ArrayList<EncryptMessage> a, ArrayList<EncryptMessage> b) {
+        Collections.reverse(a);
+        Collections.reverse(b);
         ArrayList<EncryptMessage> result = new ArrayList<>();
-        for (int i = 0; i < c.size(); i++) {
-            result.add(not(c.get(i)));
+        EncryptMessage carry = new EncryptMessage(BigInteger.ZERO);
+        for (int i = 0; i < a.size(); i++) {
+            result.add(xor(xor(a.get(i), b.get(i)), carry));
+            carry = or(and(a.get(i), b.get(i)), and(carry, xor(a.get(i), b.get(i))));
         }
+        Collections.reverse(result);
         return result;
     }
 }
