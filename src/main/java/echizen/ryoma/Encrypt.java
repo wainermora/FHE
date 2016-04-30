@@ -28,14 +28,18 @@ public class Encrypt {
         ArrayList<EncryptMessage> EncryptMessage = new ArrayList<>();
         for (int i = 0; i < message.length(); i++) {
             EncryptMessage encrypt = new EncryptMessage();
-            encrypt.C = new BigInteger(String.valueOf(message.charAt(i))).add(new BigInteger("2").multiply(noise())).add(noise().multiply(PublicKey.x)).mod(PublicKey.N);
-            encrypt = encrypt(encrypt);
+            encrypt.C = encrypt(new BigInteger(message.substring(i, i + 1)));
+            encrypt = expand(encrypt);
             EncryptMessage.add(encrypt);
         }
         return EncryptMessage;
     }
 
-    private EncryptMessage encrypt(EncryptMessage encrypt) {
+    private BigInteger encrypt(BigInteger integer) {
+        return integer.add(new BigInteger("2").multiply(noise())).add(noise().multiply(PublicKey.x)).mod(PublicKey.N);
+    }
+
+    private EncryptMessage expand(EncryptMessage encrypt) {
         encrypt.Z.clear();
         int accuracy = (int) (PrivateKeySize * Math.log10(2) + 3);
         for (BigDecimal y : PublicKey.Y) {
@@ -79,9 +83,9 @@ public class Encrypt {
             }
         }
         BigInteger[] d = new BigInteger[accuracy];
-
-        for (int i = accuracy - 1; i >= 0; i--) {
-            ArrayList<BigInteger> b = new ArrayList<>();
+        ArrayList<BigInteger> b = new ArrayList<>();
+        for (int i = accuracy - 2; i >= 0; i--) {
+            b.clear();
             for (int j = 0; j < encrypt.Z.size(); j++) {
                 b.add(B[j][i]);
             }
@@ -90,11 +94,12 @@ public class Encrypt {
                 b.add(D[i + k][i]);
             }
             d[i] = e(1, b);
+
             for (int j = 1; i - j >= 0 && j < v; j++) {
                 D[i][i - j] = e((int) Math.pow(2, j), b);
             }
         }
-        return encrypt(new EncryptMessage(encrypt.C.add(d[0].add(d[1]).mod(PublicKey.N)).mod(PublicKey.N)));
+        return expand(new EncryptMessage(encrypt.C.add(d[0]).add(d[1]).mod(PublicKey.N)));
     }
 
     private BigInteger e(int i, ArrayList<BigInteger> b) {
@@ -118,7 +123,7 @@ public class Encrypt {
     }
 
     private EncryptMessage xor(EncryptMessage a, EncryptMessage b) {
-        return recrypt(encrypt(new EncryptMessage(xor(a.C, b.C))));
+        return recrypt(expand(new EncryptMessage(xor(a.C, b.C))));
     }
 
     private BigInteger xor(BigInteger a, BigInteger b) {
@@ -146,7 +151,7 @@ public class Encrypt {
     }
 
     private EncryptMessage and(EncryptMessage a, EncryptMessage b) {
-        return recrypt(encrypt(new EncryptMessage(and(a.C, b.C))));
+        return recrypt(expand(new EncryptMessage(and(a.C, b.C))));
     }
 
     private BigInteger and(BigInteger a, BigInteger b) {

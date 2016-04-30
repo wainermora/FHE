@@ -15,7 +15,7 @@ public class Main {
         //FHE_KeyPair.save("D:/test.key", "D:/test.crt");
 
         ArrayList<EncryptMessage> c1 = FHE_Encrypt.encrypt("11110000");
-        ArrayList<EncryptMessage> c2 = FHE_Encrypt.encrypt("10101010");
+        ArrayList<EncryptMessage> c2 = FHE_Encrypt.encrypt("00001111");
         System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.and(c1, c2)));
         System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.xor(c1, c2)));
         System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.or(c1, c2)));
