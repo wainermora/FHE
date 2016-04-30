@@ -19,5 +19,6 @@ public class Main {
         System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.and(c1, c2)));
         System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.xor(c1, c2)));
         System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.or(c1, c2)));
+        System.out.println(FHE_Decrypt.decrypt(FHE_Encrypt.not(c1)));
     }
 }

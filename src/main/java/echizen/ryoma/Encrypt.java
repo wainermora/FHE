@@ -114,6 +114,22 @@ public class Encrypt {
         return sum;
     }
 
+    private EncryptMessage and(EncryptMessage a, EncryptMessage b) {
+        return recrypt(expand(new EncryptMessage(and(a.C, b.C))));
+    }
+
+    private BigInteger and(BigInteger a, BigInteger b) {
+        return a.multiply(b).mod(PublicKey.N);
+    }
+
+    public ArrayList<EncryptMessage> and(ArrayList<EncryptMessage> c1, ArrayList<EncryptMessage> c2) {
+        ArrayList<EncryptMessage> result = new ArrayList<>();
+        for (int i = 0; i < c1.size(); i++) {
+            result.add(and(c1.get(i), c2.get(i)));
+        }
+        return result;
+    }
+
     public ArrayList<EncryptMessage> xor(ArrayList<EncryptMessage> c1, ArrayList<EncryptMessage> c2) {
         ArrayList<EncryptMessage> result = new ArrayList<>();
         for (int i = 0; i < c1.size(); i++) {
@@ -142,19 +158,15 @@ public class Encrypt {
         return result;
     }
 
-    public ArrayList<EncryptMessage> and(ArrayList<EncryptMessage> c1, ArrayList<EncryptMessage> c2) {
+    private EncryptMessage not(EncryptMessage a) {
+        return xor(a, expand(new EncryptMessage(encrypt(BigInteger.ONE))));
+    }
+
+    public ArrayList<EncryptMessage> not(ArrayList<EncryptMessage> c) {
         ArrayList<EncryptMessage> result = new ArrayList<>();
-        for (int i = 0; i < c1.size(); i++) {
-            result.add(and(c1.get(i), c2.get(i)));
+        for (int i = 0; i < c.size(); i++) {
+            result.add(not(c.get(i)));
         }
         return result;
-    }
-
-    private EncryptMessage and(EncryptMessage a, EncryptMessage b) {
-        return recrypt(expand(new EncryptMessage(and(a.C, b.C))));
-    }
-
-    private BigInteger and(BigInteger a, BigInteger b) {
-        return a.multiply(b).mod(PublicKey.N);
     }
 }
