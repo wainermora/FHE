@@ -3,7 +3,6 @@ package echizen.ryoma;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 
 public class Encrypt {
@@ -16,7 +15,7 @@ public class Encrypt {
         PublicKey = publicKey;
         PublicKeySize = PublicKey.S.size();
         PrivateKeySize = (PublicKeySize - 2) / 4;
-        NoiseSize = (int) (Math.pow(PrivateKeySize, 0.25)) + 1;
+        NoiseSize = (int) Math.sqrt(PrivateKeySize) + 1;
     }
 
     private BigInteger noise() {
@@ -72,7 +71,7 @@ public class Encrypt {
             }
         }
 
-        int v = (int) (0.5 * Math.log(PrivateKeySize) / Math.log(2) + 1);
+        int v = (int) (Math.log(PrivateKeySize) / Math.log(2)) + 1;
         BigInteger[][] D = new BigInteger[accuracy][accuracy];
         for (int i = 0; i < accuracy; i++) {
             for (int j = 0; j < accuracy; j++) {
@@ -92,7 +91,7 @@ public class Encrypt {
             }
             d[i] = e(1, b);
             for (int j = 1; i - j >= 0 && j < v; j++) {
-                D[i][i - j] = e(j + 1, b);
+                D[i][i - j] = e((int) Math.pow(2, j), b);
             }
         }
         return encrypt(new EncryptMessage(encrypt.C.add(d[0].add(d[1]).mod(PublicKey.N)).mod(PublicKey.N)));
@@ -134,6 +133,14 @@ public class Encrypt {
         return xor(xor(a, b), and(a, b));
     }
 
+    public ArrayList<EncryptMessage> or(ArrayList<EncryptMessage> c1, ArrayList<EncryptMessage> c2) {
+        ArrayList<EncryptMessage> result = new ArrayList<>();
+        for (int i = 0; i < c1.size(); i++) {
+            result.add(or(c1.get(i), c2.get(i)));
+        }
+        return result;
+    }
+
     public ArrayList<EncryptMessage> and(ArrayList<EncryptMessage> c1, ArrayList<EncryptMessage> c2) {
         ArrayList<EncryptMessage> result = new ArrayList<>();
         for (int i = 0; i < c1.size(); i++) {
@@ -148,18 +155,5 @@ public class Encrypt {
 
     private BigInteger and(BigInteger a, BigInteger b) {
         return a.multiply(b).mod(PublicKey.N);
-    }
-
-    public ArrayList<EncryptMessage> add(ArrayList<EncryptMessage> a, ArrayList<EncryptMessage> b) {
-        Collections.reverse(a);
-        Collections.reverse(b);
-        ArrayList<EncryptMessage> result = new ArrayList<>();
-        EncryptMessage carry = new EncryptMessage(BigInteger.ZERO);
-        for (int i = 0; i < a.size(); i++) {
-            result.add(xor(a.get(i), b.get(i), carry));
-            carry = or(and(a.get(i), b.get(i)), and(carry, xor(a.get(i), b.get(i))));
-        }
-        Collections.reverse(result);
-        return result;
     }
 }
