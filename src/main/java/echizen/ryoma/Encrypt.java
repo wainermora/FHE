@@ -125,10 +125,6 @@ public class Encrypt {
         return a.add(b).mod(PublicKey.N);
     }
 
-    private EncryptMessage xor(EncryptMessage a, EncryptMessage b, EncryptMessage c) {
-        return xor(xor(a, b), c);
-    }
-
     private EncryptMessage or(EncryptMessage a, EncryptMessage b) {
         return xor(xor(a, b), and(a, b));
     }
